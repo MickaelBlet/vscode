@@ -78,21 +78,6 @@ export interface CachedResponseMetadata {
 	testName: string;
 }
 
-export namespace CachedResponseMetadata {
-	export function isCachedResponseMetadata(obj: any): obj is CachedResponseMetadata {
-		return (
-			typeof obj === 'object' &&
-			obj !== null &&
-			'requestDuration' in obj &&
-			typeof (obj as any).requestDuration === 'number' &&
-			'requestTime' in obj &&
-			typeof (obj as any).requestTime === 'string' &&
-			'testName' in obj &&
-			typeof (obj as any).testName === 'string'
-		);
-	}
-}
-
 export type CachedExtraData = { cacheMetadata: CachedResponseMetadata | undefined; copilotFunctionCalls?: ICopilotToolCall[]; logprobs?: ChoiceLogProbs };
 export type CachedResponse = ChatResponses & CachedExtraData;
 

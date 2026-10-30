@@ -39,8 +39,6 @@ import { Cache } from './base/cache';
 import { IChatMLCache } from './base/cachingChatMLFetcher';
 import { usedResourceCaches } from './base/cachingResourceFetcher';
 import { ChatMLSQLiteCache } from './base/chatMLCache';
-import { CompletionsSQLiteCache, ICompletionsCache } from './base/completionsCache';
-import { usedEmbeddingsCaches } from './base/embeddingsCache';
 import { TestingCacheSalts } from './base/salts';
 import { ICompleteBaselineComparison, IModifiedScenario, SimulationBaseline } from './base/simulationBaseline';
 import { CacheMode, CurrentTestRunInfo, SimulationServicesOptions, createSimulationChatModelThrottlingTaskLaunchers, loadConfigFile } from './base/simulationContext';
@@ -309,9 +307,7 @@ async function runTests(opts: SimulationOptions, jsonOutputPrinter: IJSONOutputP
 	const writeUsedOtherCaches = false;
 	if (writeUsedOtherCaches) {
 		await fs.promises.writeFile('other-caches.json', JSON.stringify(
-			([] as string[])
-				.concat(Array.from(usedEmbeddingsCaches))
-				.concat(Array.from(usedResourceCaches))
+			Array.from(usedResourceCaches)
 		));
 	}
 
@@ -569,20 +565,16 @@ function createSimulationTestContext(
 	const simulationEndpointHealth = new SimulationEndpointHealthImpl();
 
 	let createChatMLCache: ((info: CurrentTestRunInfo) => IChatMLCache) | undefined;
-	let createNesFetchCache: ((info: CurrentTestRunInfo) => ICompletionsCache) | undefined;
 
 	if (opts.lmCacheMode === CacheMode.Disable) {
 		console.warn('❗ Not using any cache');
 		createChatMLCache = undefined;
-		createNesFetchCache = undefined;
 	} else {
 		createChatMLCache = (info: CurrentTestRunInfo) => new ChatMLSQLiteCache(TestingCacheSalts.requestCacheSalt, info);
-		createNesFetchCache = (info: CurrentTestRunInfo) => new CompletionsSQLiteCache(TestingCacheSalts.nesFetchCacheSalt, info);
 	}
 
 	const simulationServicesOptions: SimulationServicesOptions = {
 		createChatMLCache,
-		createNesFetchCache,
 		chatModelThrottlingTaskLaunchers: createSimulationChatModelThrottlingTaskLaunchers(opts.boost),
 		isNoFetchModeEnabled: opts.noFetch,
 		languageModelCacheMode: opts.lmCacheMode,
